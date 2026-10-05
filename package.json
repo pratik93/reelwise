@@ -6,14 +6,31 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "ingest:discover": "tsx ingestion/discover.ts",
+    "ingest:fetch": "tsx ingestion/fetch-details.ts",
+    "ingest:import": "tsx ingestion/import.ts",
+    "ingest:omdb": "tsx ingestion/omdb.ts",
+    "ingest:similar": "tsx ingestion/similarity.ts",
+    "ingest:report": "tsx ingestion/report.ts",
+    "ingest": "npm run db:migrate && npm run ingest:discover && npm run ingest:fetch && npm run ingest:import && npm run ingest:omdb && npm run ingest:similar && npm run ingest:report",
+    "refresh": "npm run db:migrate && tsx ingestion/refresh.ts && npm run ingest:fetch && npm run ingest:import && npm run ingest:omdb && npm run ingest:similar && npm run ingest:report",
+    "setup": "npm install && cp -n .env.example .env; npm run db:migrate",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "dotenv": "^18.0.5",
     "next": "16.3.8",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -21,6 +38,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }

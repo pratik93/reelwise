@@ -1,0 +1,32 @@
+name: Weekly data refresh
+on:
+  schedule:
+    - cron: "0 5 * * 1" # Mondays 05:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      # Cache raw TMDB responses between runs so only changed movies are re-fetched.
+      - uses: actions/cache@v4
+        with:
+          path: ingestion/cache
+          key: ingestion-cache-${{ github.run_id }}
+          restore-keys: ingestion-cache-
+      - name: Refresh trending, new releases and streaming data
+        run: npm run refresh
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+          WATCH_REGIONS: US
+      - name: Trigger site revalidation
+        if: ${{ vars.DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ vars.DEPLOY_HOOK_URL }}"
